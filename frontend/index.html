@@ -70,21 +70,28 @@
       </form>
     </div>
 
-    <!-- PROFILE SECTION -->
+    <!-- MAIN APP DASHBOARD -->
     <div id="profile-section" class="hidden">
       <!-- Header / Nav -->
       <header class="app-header fade-in">
         <div class="header-logo">
           <i class="fa-solid fa-user-gear"></i> ProfileSphere
         </div>
+        <div class="nav-tabs">
+          <button id="nav-btn-profile" class="nav-tab-btn active" onclick="switchNavView('profile')">
+            <i class="fa-regular fa-id-card"></i> My Profile
+          </button>
+          <button id="nav-btn-directory" class="nav-tab-btn" onclick="switchNavView('directory')">
+            <i class="fa-solid fa-users-gear"></i> User Management
+          </button>
+        </div>
         <button onclick="handleLogout()" class="btn btn-secondary">
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       </header>
 
-      <!-- Dashboard Layout -->
-      <div class="dashboard-grid">
-        
+      <!-- VIEW 1: MY PROFILE -->
+      <div id="view-my-profile" class="dashboard-grid">
         <!-- Left Column: Avatar & Summary -->
         <div class="card card-sidebar fade-in delay-1">
           <div class="avatar-wrapper">
@@ -117,11 +124,16 @@
               <span class="value" id="sidebar-joined">June 2026</span>
             </div>
           </div>
+
+          <div class="sidebar-danger-zone">
+            <button onclick="promptDeleteAccount()" class="btn btn-danger btn-block">
+              <i class="fa-solid fa-trash-can"></i> Delete My Account
+            </button>
+          </div>
         </div>
 
         <!-- Right Column: Details & Edit Forms -->
         <div class="card card-main fade-in delay-2">
-          
           <!-- View Profile Panel -->
           <div id="profile-view-panel">
             <div class="panel-header">
@@ -160,7 +172,7 @@
                 <div class="icon-box"><i class="fa-regular fa-comment-dots"></i></div>
                 <div class="detail-content">
                   <span class="detail-label">Professional Bio</span>
-                  <p class="detail-value-text" id="view-bio">Software engineer passionate about building sleek and performant web applications. Experienced in Node.js, MERN stack, and modern UI design.</p>
+                  <p class="detail-value-text" id="view-bio">Software engineer passionate about building sleek and performant web applications.</p>
                 </div>
               </div>
             </div>
@@ -194,7 +206,7 @@
 
               <div class="input-group">
                 <label for="edit-bio"><i class="fa-regular fa-comment-dots"></i> Professional Bio</label>
-                <textarea id="edit-bio" rows="4" placeholder="Tell us about yourself, your career path, or interests..."></textarea>
+                <textarea id="edit-bio" rows="4" placeholder="Tell us about yourself..."></textarea>
               </div>
 
               <div class="form-actions">
@@ -207,11 +219,146 @@
               </div>
             </form>
           </div>
-
         </div>
       </div>
+
+      <!-- VIEW 2: USER DIRECTORY & MANAGEMENT -->
+      <div id="view-user-directory" class="hidden fade-in">
+        <div class="card">
+          <div class="directory-header">
+            <div>
+              <h2 class="directory-title"><i class="fa-solid fa-users-gear"></i> User Directory Management</h2>
+              <p class="directory-subtitle">View, Add, Update, or Remove registered users from the system</p>
+            </div>
+            <button onclick="openAddUserModal()" class="btn btn-primary">
+              <i class="fa-solid fa-user-plus"></i> Add New User
+            </button>
+          </div>
+
+          <!-- Controls Bar -->
+          <div class="directory-controls">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="user-search-input" placeholder="Search by name, username, or email..." oninput="handleUserSearch(event)">
+            </div>
+            <div class="users-count-badge">
+              <span id="users-count-num">0</span> Users Total
+            </div>
+          </div>
+
+          <!-- Users Directory Grid Container -->
+          <div id="users-grid" class="users-grid">
+            <!-- Dynamically populated user cards -->
+          </div>
+        </div>
+      </div>
+
     </div>
 
+  </div>
+
+  <!-- MODAL: ADD USER -->
+  <div id="modal-add-user" class="modal-overlay hidden">
+    <div class="modal-card fade-in">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-plus"></i> Add New User</h3>
+        <button onclick="closeModal('modal-add-user')" class="modal-close-btn">&times;</button>
+      </div>
+      <form id="add-user-form" onsubmit="handleAddUserSubmit(event)">
+        <div class="form-row">
+          <div class="input-group">
+            <label for="add-username"><i class="fa-regular fa-user"></i> Username *</label>
+            <input type="text" id="add-username" required placeholder="alexsmith">
+          </div>
+          <div class="input-group">
+            <label for="add-password"><i class="fa-solid fa-lock"></i> Password *</label>
+            <input type="password" id="add-password" required placeholder="••••••••">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label for="add-name"><i class="fa-regular fa-id-card"></i> Full Name</label>
+            <input type="text" id="add-name" placeholder="Alex Smith">
+          </div>
+          <div class="input-group">
+            <label for="add-email"><i class="fa-regular fa-envelope"></i> Email Address *</label>
+            <input type="email" id="add-email" required placeholder="alex@example.com">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="add-phone"><i class="fa-solid fa-phone"></i> Phone Number</label>
+          <input type="text" id="add-phone" placeholder="+1 555-0199">
+        </div>
+        <div class="input-group">
+          <label for="add-bio"><i class="fa-regular fa-comment-dots"></i> Professional Bio</label>
+          <textarea id="add-bio" rows="3" placeholder="Short bio description..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeModal('modal-add-user')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Add User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT USER (MANAGEMENT) -->
+  <div id="modal-edit-user" class="modal-overlay hidden">
+    <div class="modal-card fade-in">
+      <div class="modal-header">
+        <h3><i class="fa-regular fa-pen-to-square"></i> Edit User Information</h3>
+        <button onclick="closeModal('modal-edit-user')" class="modal-close-btn">&times;</button>
+      </div>
+      <form id="manage-edit-user-form" onsubmit="handleManageEditUserSubmit(event)">
+        <input type="hidden" id="manage-edit-user-id">
+        <div class="form-row">
+          <div class="input-group">
+            <label for="manage-edit-username"><i class="fa-regular fa-user"></i> Username</label>
+            <input type="text" id="manage-edit-username" required>
+          </div>
+          <div class="input-group">
+            <label for="manage-edit-email"><i class="fa-regular fa-envelope"></i> Email Address</label>
+            <input type="email" id="manage-edit-email" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label for="manage-edit-name"><i class="fa-regular fa-id-card"></i> Full Name</label>
+            <input type="text" id="manage-edit-name">
+          </div>
+          <div class="input-group">
+            <label for="manage-edit-phone"><i class="fa-solid fa-phone"></i> Phone Number</label>
+            <input type="text" id="manage-edit-phone">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="manage-edit-bio"><i class="fa-regular fa-comment-dots"></i> Bio</label>
+          <textarea id="manage-edit-bio" rows="3"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeModal('modal-edit-user')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Update Details</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DELETE CONFIRMATION -->
+  <div id="modal-confirm-delete" class="modal-overlay hidden">
+    <div class="modal-card modal-card-sm fade-in">
+      <div class="modal-header">
+        <h3 class="danger-text"><i class="fa-solid fa-triangle-exclamation"></i> Confirm Deletion</h3>
+        <button onclick="closeModal('modal-confirm-delete')" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-confirm-message">Are you sure you want to delete this user? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeModal('modal-confirm-delete')" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-delete-action-btn" type="button" class="btn btn-danger">
+          <i class="fa-solid fa-trash-can"></i> Delete Permanently
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- TOAST NOTIFICATION CONTAINER -->

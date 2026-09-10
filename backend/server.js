@@ -23,6 +23,7 @@ app.use('/uploads', express.static(uploadsDir));
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/profile', require('./routes/profile'));
+app.use('/api/users', require('./routes/users'));
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../frontend')));

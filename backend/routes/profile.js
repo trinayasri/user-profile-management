@@ -153,4 +153,35 @@ router.post('/upload-image', auth, (req, res) => {
   });
 });
 
+// @route   DELETE api/profile/delete
+// @desc    Delete logged in user profile & account
+// @access  Private
+router.delete('/delete', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Clean up profile image if exists
+    if (user.profileImage) {
+      const oldImagePath = path.join(__dirname, '../../', user.profileImage);
+      if (fs.existsSync(oldImagePath)) {
+        try {
+          fs.unlinkSync(oldImagePath);
+        } catch (unlinkErr) {
+          console.error('Failed to delete old profile image:', unlinkErr);
+        }
+      }
+    }
+
+    await User.findByIdAndDelete(req.user.id);
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;
